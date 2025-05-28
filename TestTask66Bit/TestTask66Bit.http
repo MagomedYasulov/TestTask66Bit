@@ -1,0 +1,6 @@
+@TestTask66Bit_HostAddress = http://localhost:5145
+
+GET {{TestTask66Bit_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
