@@ -1,4 +1,6 @@
 
+using TestTask66Bit.Extensions;
+
 namespace TestTask66Bit
 {
     public class Program
@@ -9,10 +11,14 @@ namespace TestTask66Bit
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.AddData();
+            builder.AddControllers();
+            builder.AddSwagger();
+            builder.AddFluentValidation();
+            builder.AddAutoMapper();
+
+            builder.AddExceptionHandler();
+            builder.AddAppServices();
 
             var app = builder.Build();
 
@@ -24,9 +30,10 @@ namespace TestTask66Bit
             }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
+            app.UseExceptionHandler();
             app.UseAuthorization();
-
 
             app.MapControllers();
 
