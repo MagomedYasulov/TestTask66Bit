@@ -11,9 +11,11 @@ namespace TestTask66Bit.Models
         {
             CreateMap<CreateProjectDto, Project>();
             CreateMap<CreateInternshipDto, Internship>();
+            CreateMap<CreateInternDto, Intern>();
 
             CreateMap<Project, ProjectDto>();
             CreateMap<Internship, InternshipDto>();
+            CreateMap<Intern, InternDto>();
         }
     }
 }

@@ -10,6 +10,7 @@ using TestTask66Bit.Data;
 using TestTask66Bit.Models;
 using TestTask66Bit.Abstractions;
 using TestTask66Bit.Services;
+using Newtonsoft.Json;
 
 namespace TestTask66Bit.Extensions
 {
@@ -27,6 +28,8 @@ namespace TestTask66Bit.Extensions
             builder.Services.AddRouting(opt => opt.LowercaseUrls = true);
             builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation().AddNewtonsoftJson(options =>
             {
+                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
             return builder;
@@ -39,7 +42,7 @@ namespace TestTask66Bit.Extensions
             {
                 option.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "TestTAsk66Bit API",
+                    Title = "TestTask66Bit API",
                     Version = "v1"
                 });
             });

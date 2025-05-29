@@ -1,4 +1,9 @@
-﻿using TestTask66Bit.Abstractions;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using TestTask66Bit.Abstractions;
+using TestTask66Bit.Data;
+using TestTask66Bit.Data.Entites;
+using TestTask66Bit.Exceptions;
 using TestTask66Bit.ViewModels.Request;
 using TestTask66Bit.ViewModels.Response;
 
@@ -6,34 +11,85 @@ namespace TestTask66Bit.Services
 {
     public class InternsService : IInternsService
     {
-        public InternsService()
-        {
+        private readonly IMapper _mapper;
+        private readonly ApplicationContext _dbContext;
 
+        public InternsService(
+            IMapper mapper,
+            ApplicationContext dbContext)
+        {
+            _mapper = mapper;
+            _dbContext = dbContext;
         }
 
-        public Task<InternDto> Create(CreateInternDto model)
+        public async Task<InternDto> Create(CreateInternDto model)
         {
-            throw new NotImplementedException();
+            await ValidateIds(model.ProjectId, model.InternshipId);
+
+            var intern = _mapper.Map<Intern>(model);
+
+            await _dbContext.Interns.AddAsync(intern);
+            await _dbContext.SaveChangesAsync();
+
+            return _mapper.Map<InternDto>(intern);
         }
 
-        public Task Delete(int internId)
+        public async Task<InternDto> Get(int id)
         {
-            throw new NotImplementedException();
+            var intern = await _dbContext.Interns.AsNoTracking().Include(p => p.Project).Include(i => i.Internship).FirstOrDefaultAsync(p => p.Id == id);
+            if (intern == null)
+                throw new ServiceException("Intern Not Found", $"Intern with id {id} not found", StatusCodes.Status404NotFound);
+
+            return _mapper.Map<InternDto>(intern);
         }
 
-        public Task<InternDto> Get(int id)
+        public async Task<InternDto[]> Get()
         {
-            throw new NotImplementedException();
+            var interns = await _dbContext.Interns.AsNoTracking().Include(p => p.Project).Include(i => i.Internship).ToArrayAsync();
+            return _mapper.Map<InternDto[]>(interns);
         }
 
-        public Task<InternDto[]> Get()
+        public async Task<InternDto> Update(int id, UpdateInternDto model)
         {
-            throw new NotImplementedException();
+            await ValidateIds(model.ProjectId, model.InternshipId);
+
+            var intern = await _dbContext.Interns.Include(p => p.Project).Include(i => i.Internship).FirstOrDefaultAsync(p => p.Id == id);
+            if (intern == null)
+                throw new ServiceException("Intern Not Found", $"Intern with id {id} not found", StatusCodes.Status404NotFound);
+
+            intern.Name = model.Name;
+            intern.Surname = model.Surname;
+            intern.BirthDate = model.BirthDate!.Value;
+            intern.Phone = model.Phone;
+            intern.Email = model.Email;
+            intern.Gender = model.Gender;
+            intern.ProjectId = model.ProjectId;
+            intern.InternshipId = model.InternshipId;
+            await _dbContext.SaveChangesAsync();
+
+            return _mapper.Map<InternDto>(intern);
         }
 
-        public Task<InternDto> Update(int id, UpdateInternDto model)
+        public async Task Delete(int internId)
         {
-            throw new NotImplementedException();
+            var intern = await _dbContext.Interns.FirstOrDefaultAsync(p => p.Id == internId);
+            if (intern == null)
+                throw new ServiceException("Intern Not Found", $"Intern with id {internId} not found", StatusCodes.Status404NotFound);
+
+            _dbContext.Interns.Remove(intern);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        private async Task ValidateIds(int projectId, int internShipId)
+        {
+            var projectIdTask = _dbContext.Projects.AnyAsync(p => p.Id == projectId);
+            var internshipIdTask = _dbContext.Internships.AnyAsync(i => i.Id == internShipId);
+
+            if(!await projectIdTask)
+                throw new ServiceException("Project Not Found", $"Project with id {projectId} not found", StatusCodes.Status404NotFound);
+
+            if(!await internshipIdTask)
+                throw new ServiceException("Internship Not Found", $"Internship with id {internShipId} not found", StatusCodes.Status404NotFound);
         }
     }
 }

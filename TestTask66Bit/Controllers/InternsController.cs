@@ -8,7 +8,7 @@ namespace TestTask66Bit.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class InternsController : ControllerBase
+    public class InternsController : BaseController
     {
         private readonly IInternsService _internsService;
 

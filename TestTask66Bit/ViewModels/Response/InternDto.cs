@@ -15,9 +15,9 @@ namespace TestTask66Bit.ViewModels.Response
 
 
         public int InternshipId { get; set; }
-        public InternshipDto Internship { get; set; }
+        public InternshipDto? Internship { get; set; }
 
         public int ProjectId { get; set; }
-        public ProjectDto Project { get; set; }
+        public ProjectDto? Project { get; set; }
     }
 }

@@ -6,6 +6,6 @@ namespace TestTask66Bit.ViewModels.Response
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public List<InternDto> Interns { get; set; } = [];
+        public List<InternDto>? Interns { get; set; } 
     }
 }

@@ -31,7 +31,7 @@ namespace TestTask66Bit.Filters
                 Instance = context.HttpContext.Request.Path,
             };
 
-            _logger.LogError("Api method {path} finished with code {statusCode} and error: {error}",
+            _logger.LogWarning("Api method {path} finished with code {statusCode} and error: {error}",
                              context.HttpContext.Request.Path, serviceException.StatusCode, response.Detail);
 
             context.Result = new JsonResult(response) { StatusCode = serviceException.StatusCode };
