@@ -6,6 +6,11 @@ namespace TestTask66Bit.Services
 {
     public class InternsService : IInternsService
     {
+        public InternsService()
+        {
+
+        }
+
         public Task<InternDto> Create(CreateInternDto model)
         {
             throw new NotImplementedException();

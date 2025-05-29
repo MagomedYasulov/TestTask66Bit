@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Drawing;
 using TestTask66Bit.Abstractions;
 using TestTask66Bit.Data;
 using TestTask66Bit.Data.Entites;

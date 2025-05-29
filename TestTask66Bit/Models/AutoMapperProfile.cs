@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
-using System.Drawing;
+using TestTask66Bit.Data.Entites;
+using TestTask66Bit.ViewModels.Request;
+using TestTask66Bit.ViewModels.Response;
 
 namespace TestTask66Bit.Models
 {
@@ -7,7 +9,11 @@ namespace TestTask66Bit.Models
     {
         public AutoMapperProfile()
         {
+            CreateMap<CreateProjectDto, Project>();
+            CreateMap<CreateInternshipDto, Internship>();
 
+            CreateMap<Project, ProjectDto>();
+            CreateMap<Internship, InternshipDto>();
         }
     }
 }
