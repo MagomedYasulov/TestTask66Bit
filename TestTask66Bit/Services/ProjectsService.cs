@@ -1,4 +1,10 @@
-﻿using TestTask66Bit.Abstractions;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using System.Drawing;
+using TestTask66Bit.Abstractions;
+using TestTask66Bit.Data;
+using TestTask66Bit.Data.Entites;
+using TestTask66Bit.Exceptions;
 using TestTask66Bit.ViewModels.Request;
 using TestTask66Bit.ViewModels.Response;
 
@@ -6,29 +12,65 @@ namespace TestTask66Bit.Services
 {
     public class ProjectsService : IProjectsService
     {
-        public Task<ProjectDto> Create(CreateProjectDto model)
+        private readonly IMapper _mapper;
+        private readonly ApplicationContext _dbContext;
+
+        public ProjectsService(
+            IMapper mapper, 
+            ApplicationContext dbContext)
         {
-            throw new NotImplementedException();
+            _mapper = mapper;
+            _dbContext = dbContext;
         }
 
-        public Task Delete(int projectId)
+        public async Task<ProjectDto> Create(CreateProjectDto model)
         {
-            throw new NotImplementedException();
+            var project = _mapper.Map<Project>(model);
+
+            await _dbContext.Projects.AddAsync(project);
+            await _dbContext.SaveChangesAsync();
+
+            return _mapper.Map<ProjectDto>(project);
         }
 
-        public Task<ProjectDto> Get(int id)
+        public async Task<ProjectDto> Get(int id)
         {
-            throw new NotImplementedException();
+            var project = await _dbContext.Projects.AsNoTracking().Include(p => p.Interns).FirstOrDefaultAsync(p => p.Id == id);
+            if (project == null)
+                throw new ServiceException("Project Not Found", $"Project with id {id} not found", StatusCodes.Status404NotFound);
+
+            return _mapper.Map<ProjectDto>(project);
         }
 
-        public Task<ProjectDto[]> Get()
+        public async Task<ProjectDto[]> Get()
         {
-            throw new NotImplementedException();
+            var projects = await _dbContext.Projects.AsNoTracking().Include(p => p.Interns).ToArrayAsync();
+            return _mapper.Map<ProjectDto[]>(projects);
         }
 
-        public Task<ProjectDto> Update(int id, UpdateProjectDto model)
+        public async Task<ProjectDto> Update(int id, UpdateProjectDto model)
         {
-            throw new NotImplementedException();
+            var project = await _dbContext.Projects.Include(p => p.Interns).FirstOrDefaultAsync(p => p.Id == id);
+            if (project == null)
+                throw new ServiceException("Project Not Found", $"Project with id {id} not found", StatusCodes.Status404NotFound);
+
+            project.Name = model.Name;
+            await _dbContext.SaveChangesAsync();
+
+            return _mapper.Map<ProjectDto>(project);
+        }
+
+        public async Task Delete(int projectId)
+        {
+            if (await _dbContext.Interns.AnyAsync(i => i.ProjectId == projectId))
+                throw new ServiceException("Can`t delete project", $"Can`t delete project with id {projectId}, while there are interns with this project", StatusCodes.Status409Conflict);
+
+            var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+            if(project == null)
+                throw new ServiceException("Project Not Found", $"Project with id {projectId} not found", StatusCodes.Status404NotFound);
+            
+            _dbContext.Projects.Remove(project);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

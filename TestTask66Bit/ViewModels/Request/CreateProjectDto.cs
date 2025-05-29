@@ -1,6 +1,9 @@
-﻿namespace TestTask66Bit.ViewModels.Request
+﻿using TestTask66Bit.Data.Entites;
+
+namespace TestTask66Bit.ViewModels.Request
 {
     public class CreateProjectDto
     {
+        public string Name { get; set; } = string.Empty;
     }
 }
