@@ -8,6 +8,8 @@ using TestTask66Bit.Middlewares;
 using TestTask66Bit.Validators;
 using TestTask66Bit.Data;
 using TestTask66Bit.Models;
+using TestTask66Bit.Abstractions;
+using TestTask66Bit.Services;
 
 namespace TestTask66Bit.Extensions
 {
@@ -64,6 +66,9 @@ namespace TestTask66Bit.Extensions
 
         public static WebApplicationBuilder AddAppServices(this WebApplicationBuilder builder)
         {
+            builder.Services.AddScoped<IInternshipsService, InternshipsService>();
+            builder.Services.AddScoped<IProjectsService, ProjectsService>();
+            builder.Services.AddScoped<IInternsService, InternsService>();
             return builder;
         }
 

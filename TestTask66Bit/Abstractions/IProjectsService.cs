@@ -3,7 +3,7 @@ using TestTask66Bit.ViewModels.Response;
 
 namespace TestTask66Bit.Abstractions
 {
-    public interface IProjectService
+    public interface IProjectsService
     {
         public Task<ProjectDto> Get(int id);
         public Task<ProjectDto[]> Get();
