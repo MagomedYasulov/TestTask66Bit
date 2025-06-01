@@ -8,6 +8,7 @@ namespace TestTask66Bit.Validators
         public CreateProjectValidator()
         {
             RuleFor(p => p.Name).NotEmpty();
+            RuleFor(p => p.Interns).NotNull();
         }
     }
 

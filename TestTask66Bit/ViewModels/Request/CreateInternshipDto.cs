@@ -3,5 +3,6 @@
     public class CreateInternshipDto
     {
         public string Name { get; set; } = string.Empty;
+        public int[]? Interns { get; set; }
     }
 }

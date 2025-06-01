@@ -22,14 +22,30 @@ namespace TestTask66Bit.Services
             _dbContext = dbContext;
         }
 
-        public async Task<ProjectDto> Create(CreateProjectDto model)
+        public async Task<ProjectPartialDto> Create(CreateProjectDto model)
         {
+            await CreateProjectValidation(model);
+
             var project = _mapper.Map<Project>(model);
 
             await _dbContext.Projects.AddAsync(project);
+            foreach (var internId in model.Interns!)
+            {
+                var intern = new Intern() { Id = internId, ProjectId = project.Id };
+                _dbContext.Interns.Attach(intern);
+                _dbContext.Entry(intern).Property(i => i.ProjectId).IsModified = true;
+            }
             await _dbContext.SaveChangesAsync();
 
-            return _mapper.Map<ProjectDto>(project);
+            return _mapper.Map<ProjectPartialDto>(project);
+        }
+
+        private async Task CreateProjectValidation(CreateProjectDto model)
+        {
+            var internsId = await _dbContext.Interns.Select(i => i.Id).ToArrayAsync();
+            var notExistInterns = model.Interns!.Where(internId => !internsId.Contains(internId)).ToArray();
+            if (notExistInterns.Length > 0)
+                throw new ServiceException("Interns Not Found", $"Interns with id {string.Join(",", notExistInterns)} not found", StatusCodes.Status404NotFound);
         }
 
         public async Task<ProjectDto> Get(int id)
@@ -47,16 +63,24 @@ namespace TestTask66Bit.Services
             return _mapper.Map<ProjectDto[]>(projects);
         }
 
-        public async Task<ProjectDto> Update(int id, UpdateProjectDto model)
+        /// <summary>
+        /// При обновлении проекта не получится сразу менять массив стажеров, 
+        /// так как не понятно какой id проекта присваивать стажерам которых убрали из массива при обновлении 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <exception cref="ServiceException"></exception>
+        public async Task<ProjectPartialDto> Update(int id, UpdateProjectDto model)
         {
-            var project = await _dbContext.Projects.Include(p => p.Interns).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == id);
             if (project == null)
                 throw new ServiceException("Project Not Found", $"Project with id {id} not found", StatusCodes.Status404NotFound);
 
             project.Name = model.Name;
             await _dbContext.SaveChangesAsync();
 
-            return _mapper.Map<ProjectDto>(project);
+            return _mapper.Map<ProjectPartialDto>(project);
         }
 
         public async Task Delete(int projectId)

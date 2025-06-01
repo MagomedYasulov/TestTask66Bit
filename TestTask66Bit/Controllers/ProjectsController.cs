@@ -31,14 +31,14 @@ namespace TestTask66Bit.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ProjectDto[]>> Create(CreateProjectDto model)
+        public async Task<ActionResult<ProjectPartialDto>> Create(CreateProjectDto model)
         {
             var projectDto = await _projectsService.Create(model);
             return Ok(projectDto);
         }
 
         [HttpPut("{projectId}")]
-        public async Task<ActionResult<ProjectDto[]>> Update(int projectId, UpdateProjectDto model)
+        public async Task<ActionResult<ProjectPartialDto>> Update(int projectId, UpdateProjectDto model)
         {
             var projectDto = await _projectsService.Update(projectId, model);
             return Ok(projectDto);

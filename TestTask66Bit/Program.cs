@@ -22,7 +22,7 @@ namespace TestTask66Bit
 
             var app = builder.Build();
 
-
+            app.SeedData();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

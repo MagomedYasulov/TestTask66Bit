@@ -8,6 +8,7 @@ namespace TestTask66Bit.Validators
         public CreateInternshipValidator()
         {
             RuleFor(i => i.Name).NotEmpty();
+            RuleFor(i => i.Interns).NotNull();
         }
     }
 

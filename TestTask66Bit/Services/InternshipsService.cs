@@ -22,14 +22,22 @@ namespace TestTask66Bit.Services
             _dbContext = dbContext;
         }
 
-        public async Task<InternshipDto> Create(CreateInternshipDto model)
+        public async Task<InternshipPartialDto> Create(CreateInternshipDto model)
         {
+            await CreateInternshipValidation(model);
+
             var internship = _mapper.Map<Internship>(model);
 
             await _dbContext.Internships.AddAsync(internship);
+            foreach(var internId in model.Interns!)
+            {
+                var intern = new Intern() { Id = internId, InternshipId = internship.Id };
+                _dbContext.Interns.Attach(intern);
+                _dbContext.Entry(intern).Property(i => i.InternshipId).IsModified = true;
+            }
             await _dbContext.SaveChangesAsync();
 
-            return _mapper.Map<InternshipDto>(internship);
+            return _mapper.Map<InternshipPartialDto>(internship);
         }
 
         public async Task<InternshipDto> Get(int id)
@@ -47,16 +55,24 @@ namespace TestTask66Bit.Services
             return _mapper.Map<InternshipDto[]>(internships);
         }
 
-        public async Task<InternshipDto> Update(int id, UpdateInternshipDto model)
+        /// <summary>
+        /// При обновлении стажировки не получится сразу менять массив стажеров, 
+        /// так как не понятно какой id стажировки присваивать стажерам которых убрали из массива при обновлении 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <exception cref="ServiceException"></exception>
+        public async Task<InternshipPartialDto> Update(int id, UpdateInternshipDto model)
         {
-            var internship = await _dbContext.Internships.Include(p => p.Interns).FirstOrDefaultAsync(p => p.Id == id);
+            var internship = await _dbContext.Internships.FirstOrDefaultAsync(p => p.Id == id);
             if (internship == null)
                 throw new ServiceException("Internship Not Found", $"Internship with id {id} not found", StatusCodes.Status404NotFound);
 
             internship.Name = model.Name;
             await _dbContext.SaveChangesAsync();
 
-            return _mapper.Map<InternshipDto>(internship);
+            return _mapper.Map<InternshipPartialDto>(internship);
         }
 
         public async Task Delete(int internshipId)
@@ -70,6 +86,14 @@ namespace TestTask66Bit.Services
 
             _dbContext.Internships.Remove(internship);
             await _dbContext.SaveChangesAsync();
+        }
+
+        private async Task CreateInternshipValidation(CreateInternshipDto model)
+        {
+            var internsId = await _dbContext.Interns.Select(i => i.Id).ToArrayAsync();
+            var notExistInterns = model.Interns!.Where(internId => !internsId.Contains(internId)).ToArray();
+            if (notExistInterns.Length > 0)
+                throw new ServiceException("Interns Not Found", $"Interns with id {string.Join(",", notExistInterns)} not found", StatusCodes.Status404NotFound);
         }
     }
 }

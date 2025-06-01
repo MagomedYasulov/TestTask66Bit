@@ -7,8 +7,8 @@ namespace TestTask66Bit.Abstractions
     {
         public Task<InternshipDto> Get(int id);
         public Task<InternshipDto[]> Get();
-        public Task<InternshipDto> Create(CreateInternshipDto model);
-        public Task<InternshipDto> Update(int id, UpdateInternshipDto model);
+        public Task<InternshipPartialDto> Create(CreateInternshipDto model);
+        public Task<InternshipPartialDto> Update(int id, UpdateInternshipDto model);
 
         public Task Delete(int internId);
     }

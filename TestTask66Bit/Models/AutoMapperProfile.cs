@@ -9,13 +9,15 @@ namespace TestTask66Bit.Models
     {
         public AutoMapperProfile()
         {
-            CreateMap<CreateProjectDto, Project>();
-            CreateMap<CreateInternshipDto, Internship>();
+            CreateMap<CreateProjectDto, Project>().ForMember(p => p.Interns, opt => opt.Ignore());
+            CreateMap<CreateInternshipDto, Internship>().ForMember(i => i.Interns, opt => opt.Ignore());
             CreateMap<CreateInternDto, Intern>();
 
             CreateMap<Project, ProjectDto>();
             CreateMap<Internship, InternshipDto>();
             CreateMap<Intern, InternDto>();
+            CreateMap<Project, ProjectPartialDto>();
+            CreateMap<Internship, InternshipPartialDto>();
         }
     }
 }
