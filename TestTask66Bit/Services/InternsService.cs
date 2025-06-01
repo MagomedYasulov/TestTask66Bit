@@ -24,7 +24,7 @@ namespace TestTask66Bit.Services
 
         public async Task<InternDto> Create(CreateInternDto model)
         {
-            await ValidateIds(model.ProjectId, model.InternshipId);
+            await CreateInternValidations(model);
 
             var intern = _mapper.Map<Intern>(model);
 
@@ -51,7 +51,7 @@ namespace TestTask66Bit.Services
 
         public async Task<InternDto> Update(int id, UpdateInternDto model)
         {
-            await ValidateIds(model.ProjectId, model.InternshipId);
+            await UpdateInternValidations(id, model);
 
             var intern = await _dbContext.Interns.Include(p => p.Project).Include(i => i.Internship).FirstOrDefaultAsync(p => p.Id == id);
             if (intern == null)
@@ -78,6 +78,36 @@ namespace TestTask66Bit.Services
 
             _dbContext.Interns.Remove(intern);
             await _dbContext.SaveChangesAsync();
+        }
+
+        private async Task CreateInternValidations(CreateInternDto model)
+        {
+            var isNotFreeEmail = _dbContext.Interns.AnyAsync(i => i.Email == model.Email);
+            var isNotFreePhone = model.Phone == null ? Task.FromResult(false) : _dbContext.Interns.AnyAsync(i => i.Phone == model.Phone);
+            var isValidIds = ValidateIds(model.ProjectId, model.InternshipId);
+
+            if (await isNotFreeEmail)
+                throw new ServiceException("Not Free Email", $"Email {model.Email} already in use", StatusCodes.Status409Conflict);
+
+            if (await isNotFreePhone)
+                throw new ServiceException("Not Free Phone", $"Phone {model.Phone} already in use", StatusCodes.Status409Conflict);
+
+            await isValidIds;
+        }
+
+        private async Task UpdateInternValidations(int internId, UpdateInternDto model)
+        {
+            var isNotFreeEmail = _dbContext.Interns.AnyAsync(i => i.Id != internId && i.Email == model.Email);
+            var isNotFreePhone = model.Phone == null ? Task.FromResult(false) : _dbContext.Interns.AnyAsync(i => i.Id != internId && i.Phone == model.Phone);
+            var isValidIds = ValidateIds(model.ProjectId, model.InternshipId);
+
+            if (await isNotFreeEmail)
+                throw new ServiceException("Not Free Email", $"Email {model.Email} already in use", StatusCodes.Status409Conflict);
+
+            if (await isNotFreePhone)
+                throw new ServiceException("Not Free Phone", $"Phone {model.Email} already in use", StatusCodes.Status409Conflict);
+
+            await isValidIds;
         }
 
         private async Task ValidateIds(int projectId, int internShipId)
