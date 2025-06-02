@@ -96,7 +96,8 @@ function prepareRowData(intern) {
         projectId: intern.projectId,
         projectName: intern.project.name,
         actions:
-            `<button class="btn btn-edit" data-id="${intern.id}" data-action="edit">Редактировать</button>`
+            `<button class="btn btn-edit" data-id="${intern.id}" data-update="upd" data-action="edit">Редактировать</button>` +
+            `<button class="btn btn-delete" data-id="${intern.id}" data-update="upd" data-action="delete">Удалить</button>`
     };
 }
 
@@ -203,9 +204,28 @@ $('#edit-form').on('submit', function (e) {
 });
 
 // Делегированный клик на кнопку «Редактировать»
-$('body').on('click', 'button[data-action="edit"]', function () {
+$('body').on('click', 'button[data-update="upd"]', function () { 
+    const action = $(this).data('action');
     const id = $(this).data('id');
-    openEditModal(id);
+    if (action === 'edit') {
+        openEditModal(id);
+    }
+    else if (action === 'delete') {
+        if (confirm('Вы уверены, что хотите удалить этого стажёра?')) {
+            fetch(`${URL_INTERN}/${id}`, { method: 'DELETE' })
+            .then((res) => {
+                if (!res.ok) {
+                    return res.json().then((err) => { throw err; });
+                }
+                showNotification('Стажёр успешно удалён');
+                loadAndRenderInterns();
+            })
+            .catch((err) => {
+                const detail = err.detail || err.message || 'Ошибка при удалении';
+                showNotification(detail, 4000);
+            });
+        }
+    }
 });
 
 // Отмена редактирования

@@ -96,19 +96,19 @@ function loadAndRenderTable(entityType) {
     const table = entityType === 'internship' ? internshipsTable : projectsTable;
 
     fetch(URL)
-        .then(res => res.json())
-        .then(data => {
-            table.clear();
-            data.forEach(entity => {
-                const row = prepareRowData(entity, entityType);
-                table.row.add(row);
-            });
-            table.draw(false);
-        })
-        .catch(err => {
-            console.error(`Ошибка загрузки ${entityType}:`, err);
-            showNotification(`Не удалось загрузить ${entityType}`, 3000);
+    .then(res => res.json())
+    .then(data => {
+        table.clear();
+        data.forEach(entity => {
+            const row = prepareRowData(entity, entityType);
+            table.row.add(row);
         });
+        table.draw(false);
+    })
+    .catch(err => {
+        console.error(`Ошибка загрузки ${entityType}:`, err);
+        showNotification(`Не удалось загрузить ${entityType}`, 3000);
+    });
 }
 
 // Открывает модальное окно с формой для создания/редактирования

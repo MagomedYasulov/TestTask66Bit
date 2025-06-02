@@ -40,8 +40,6 @@ namespace TestTask66Bit.Services
             return _mapper.Map<ProjectPartialDto>(project);
         }
 
-
-
         public async Task<ProjectDto> Get(int id)
         {
             var project = await _dbContext.Projects.AsNoTracking().Include(p => p.Interns).FirstOrDefaultAsync(p => p.Id == id);
