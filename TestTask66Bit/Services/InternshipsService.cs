@@ -51,7 +51,7 @@ namespace TestTask66Bit.Services
 
         public async Task<InternshipDto[]> Get()
         {
-            var internships = await _dbContext.Internships.AsNoTracking().Include(p => p.Interns).ToArrayAsync();
+            var internships = await _dbContext.Internships.AsNoTracking().Include(p => p.Interns).OrderBy(i => i.CreatedAt).ToArrayAsync();
             return _mapper.Map<InternshipDto[]>(internships);
         }
 

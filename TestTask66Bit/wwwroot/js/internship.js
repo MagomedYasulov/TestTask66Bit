@@ -68,6 +68,9 @@ function prepareRowData(entity, entityType) {
     // Кнопка просмотра списка interns
     const viewBtn = `<button class="btn btn-view" data-type="${entityType}" data-id="${id}" data-action="view">Стажёры (${internCount})</button>`;
 
+    // Кнопка редактирования
+    const editBtn = `<button class="btn btn-edit" data-type="${entityType}" data-id="${id}" data-action="edit">Редактировать</button>`;
+
     // Кнопка удаления
     const deleteBtn = `<button class="btn btn-delete" data-type="${entityType}" data-id="${id}" data-action="delete">Удалить</button>`;
 
@@ -83,7 +86,7 @@ function prepareRowData(entity, entityType) {
         id,
         name,
         internCount,
-        actions: viewBtn + deleteBtn + internListHtml
+        actions: viewBtn + editBtn + deleteBtn + internListHtml
     };
 }
 
@@ -152,9 +155,9 @@ function openFormModal(entityType, mode, entityData = null) {
     $('#entity-form').data('type', entityType);
 
     $('#modal-overlay')
-        .css('display', 'flex')  // указываем, что при показе должен быть flex
-        .hide()                  // скрываем, чтобы fadeIn начал с opacity:0
-        .fadeIn(200);
+    .css('display', 'flex')  // указываем, что при показе должен быть flex
+    .hide()                  // скрываем, чтобы fadeIn начал с opacity:0
+    .fadeIn(200);
 }
 
 // Закрыть модальное окно
@@ -165,7 +168,9 @@ function closeFormModal() {
 // Обработчик отправки формы (создать/редактировать)
 $('#entity-form').on('submit', function (e) {
     e.preventDefault();
+    const mode = $(this).data('mode'); // 'add' или 'edit'
     const entityType = $(this).data('type'); // 'internship' или 'project'
+    const id = $('#entity-id').val();
     const name = $('#entity-name').val().trim();
     const selectedInternIds = $('#entity-interns').val().map(idStr => parseInt(idStr));
 
@@ -175,10 +180,19 @@ $('#entity-form').on('submit', function (e) {
     }
 
     // URL и метод для создания/редактирования
-    const URL = entityType === 'internship' ? URL_INTERNSHIPS : URL_PROJECTS
+    const URL =
+        mode === 'add'
+            ? entityType === 'internship'
+                ? URL_INTERNSHIPS
+                : URL_PROJECTS
+            : entityType === 'internship'
+                ? `${URL_INTERNSHIPS}/${id}`
+                : `${URL_PROJECTS}/${id}`;
+    const method = mode === 'add' ? 'POST' : 'PUT';
+
     const payload = { name, interns: selectedInternIds };
     fetch(URL, {
-        method: 'POST',
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
@@ -191,7 +205,7 @@ $('#entity-form').on('submit', function (e) {
         return res.json();
     })
     .then(() => {
-        showNotification('Сущность успешно создана');
+        showNotification(mode == 'add' ? 'Сущность успешно создана' : "Сущность успешно обновлена");
         closeFormModal();
         // Перезагрузим таблицу
         loadAndRenderTable(entityType);
@@ -216,9 +230,7 @@ $('.tab').on('click', function () {
     $(target).removeClass('hidden');
 
     // Обновим текущий тип сущности
-    currentEntityType = target.includes('internships')
-        ? 'internship'
-        : 'project';
+    currentEntityType = target.includes('internships') ? 'internship' : 'project';
 });
 
 // Обработчик кнопок Добавить
@@ -230,7 +242,7 @@ $('#add-project').on('click', function () {
 });
 
 // Делегированные обработчики для действий внутри таблиц (View, Edit, Delete)
-$('body').on('click', 'button[data-action]', function () {
+$('body').on('click', 'button[data-action]', async function () {
     const action = $(this).data('action');
     const entityType = $(this).data('type');
     const id = $(this).data('id');
@@ -239,6 +251,22 @@ $('body').on('click', 'button[data-action]', function () {
         // Показываем/скрываем div с intern-list
         const $list = $(`#${entityType}-intern-list-${id}`);
         $list.toggle();
+    }
+    else if (action === 'edit') {
+        // Получить данные сущности по ID и открыть форму редактирования
+        const URL =
+            entityType === 'internship'
+                ? `${URL_INTERNSHIPS}/${id}`
+                : `${URL_PROJECTS}/${id}`;
+        fetch(URL)
+        .then(res => res.json())
+        .then(data => {
+            openFormModal(entityType, 'edit', data);
+        })
+        .catch(err => {
+            console.error('Ошибка получения данных для редактирования:', err);
+            showNotification('Не удалось загрузить данные для редактирования', 3000);
+        });
     }
     else if (action === 'delete') {
         // Перед удалением проверим, есть ли связанные interns
@@ -251,10 +279,14 @@ $('body').on('click', 'button[data-action]', function () {
         fetch(URL, { method: 'DELETE' })
         .then(res => {
             if (!res.ok) {
-                throw new Error('Ошибка при удалении');
+                res.json().then(data => {
+                    showNotification('Ошибка при удалении ' + data.detail, 3000);
+                })
             }
-            showNotification('Удалено успешно');
-            loadAndRenderTable(entityType);
+            else { 
+                showNotification('Удалено успешно');
+                loadAndRenderTable(entityType);
+            }
         })
         .catch(err => {
             console.error('Ошибка удаления:', err);
