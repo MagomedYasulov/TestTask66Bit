@@ -24,7 +24,7 @@ namespace TestTask66Bit.Services
 
         public async Task<ProjectPartialDto> Create(CreateProjectDto model)
         {
-            await CreateProjectValidation(model);
+            await ValidateInternsId(model.Interns!);
 
             var project = _mapper.Map<Project>(model);
 
@@ -40,13 +40,7 @@ namespace TestTask66Bit.Services
             return _mapper.Map<ProjectPartialDto>(project);
         }
 
-        private async Task CreateProjectValidation(CreateProjectDto model)
-        {
-            var internsId = await _dbContext.Interns.Select(i => i.Id).ToArrayAsync();
-            var notExistInterns = model.Interns!.Where(internId => !internsId.Contains(internId)).ToArray();
-            if (notExistInterns.Length > 0)
-                throw new ServiceException("Interns Not Found", $"Interns with id {string.Join(",", notExistInterns)} not found", StatusCodes.Status404NotFound);
-        }
+
 
         public async Task<ProjectDto> Get(int id)
         {
@@ -63,21 +57,21 @@ namespace TestTask66Bit.Services
             return _mapper.Map<ProjectDto[]>(projects);
         }
 
-        /// <summary>
-        /// При обновлении проекта не получится сразу менять массив стажеров, 
-        /// так как не понятно какой id проекта присваивать стажерам которых убрали из массива при обновлении 
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        /// <exception cref="ServiceException"></exception>
         public async Task<ProjectPartialDto> Update(int id, UpdateProjectDto model)
         {
+            await ValidateInternsId(model.Interns);
+
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == id);
             if (project == null)
                 throw new ServiceException("Project Not Found", $"Project with id {id} not found", StatusCodes.Status404NotFound);
 
             project.Name = model.Name;
+            foreach (var internId in model.Interns!)
+            {
+                var intern = new Intern() { Id = internId, ProjectId = project.Id };
+                _dbContext.Interns.Attach(intern);
+                _dbContext.Entry(intern).Property(i => i.ProjectId).IsModified = true;
+            }
             await _dbContext.SaveChangesAsync();
 
             return _mapper.Map<ProjectPartialDto>(project);
@@ -94,6 +88,18 @@ namespace TestTask66Bit.Services
             
             _dbContext.Projects.Remove(project);
             await _dbContext.SaveChangesAsync();
+        }
+
+
+        private async Task ValidateInternsId(int[] newInternsId)
+        {
+            if (newInternsId.Length == 0)
+                return;
+
+            var internsId = await _dbContext.Interns.Select(i => i.Id).ToArrayAsync();
+            var notExistInterns = newInternsId!.Where(internId => !internsId.Contains(internId)).ToArray();
+            if (notExistInterns.Length > 0)
+                throw new ServiceException("Interns Not Found", $"Interns with id {string.Join(",", notExistInterns)} not found", StatusCodes.Status404NotFound);
         }
     }
 }
