@@ -1,670 +1,73 @@
-﻿<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8" />
-    <title>Internships & Projects Management</title>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" />
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+﻿<link rel="stylesheet" href="~/css/internship.css">
+<h1>Управление Internship и Projects</h1>
 
-    <style>
-        /* Базовый сброс */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
+<!-- Таб-бар -->
+<div class="tabs">
+    <div class="tab active" data-target="#internships-container">Internships</div>
+    <div class="tab" data-target="#projects-container">Projects</div>
+</div>
 
-        body {
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
+<!-- Контейнер для таблицы Internship -->
+<div id="internships-container" class="table-container">
+    <button id="add-internship" class="btn btn-primary">Добавить Internship</button>
+    <table id="internships-table" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Кол-во стажёров</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 
-        h1 {
-            margin-bottom: 20px;
-            text-align: center;
-        }
+<!-- Контейнер для таблицы Projects -->
+<div id="projects-container" class="table-container hidden">
+    <button id="add-project" class="btn btn-primary">Добавить Project</button>
+    <table id="projects-table" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Кол-во стажёров</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 
-        /* Стили таб-бара */
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #ccc;
-            margin-bottom: 16px;
-            cursor: pointer;
-        }
+<!-- Модальное окно для формы создания/редактирования -->
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal">
+        <h2 id="modal-title">Форма</h2>
+        <form id="entity-form">
+            <input type="hidden" id="entity-id" />
+            <label for="entity-name">Название:</label>
+            <input type="text" id="entity-name" required />
 
-        .tab {
-            padding: 10px 20px;
-            background-color: #e0e0e0;
-            margin-right: 4px;
-            border-radius: 4px 4px 0 0;
-        }
+            <label for="entity-interns">Стажёры:</label>
+            <select id="entity-interns" multiple size="5">
+                <!-- Здесь динамически будут подгружены все interns -->
+            </select>
 
-            .tab.active {
-                background-color: #ffffff;
-                border: 2px solid #ccc;
-                border-bottom: none;
-                border-radius: 4px 4px 0 0;
-                font-weight: bold;
-            }
-
-        /* Контейнеры для таблиц */
-        .table-container {
-            background-color: #ffffff;
-            padding: 16px;
-            border: 2px solid #ccc;
-            border-radius: 0 4px 4px 4px;
-        }
-
-            .table-container.hidden {
-                display: none;
-            }
-
-        /* Стили кнопок */
-        .btn {
-            display: inline-block;
-            padding: 6px 12px;
-            margin: 4px;
-            font-size: 14px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: #fff;
-        }
-
-        .btn-edit {
-            background-color: #28a745;
-            color: #fff;
-        }
-
-        .btn-delete {
-            background-color: #dc3545;
-            color: #fff;
-        }
-
-        .btn-view {
-            background-color: #17a2b8;
-            color: #fff;
-        }
-
-        /* Модальное окно (overlay) для форм */
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* здесь отмечаем, что по умолчанию это flex-контейнер */
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-
-        .modal {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 400px;
-            max-width: 90%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            /* чтобы не тянуться на всю ширину в случае узкого экрана */
-        }
-
-            .modal h2 {
-                margin-bottom: 12px;
-                font-size: 20px;
-            }
-
-            .modal label {
-                display: block;
-                margin: 8px 0 4px;
-                font-weight: bold;
-            }
-
-            .modal input[type="text"],
-            .modal select {
-                width: 100%;
-                padding: 6px;
-                margin-bottom: 12px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-            }
-
-            .modal .modal-buttons {
-                text-align: right;
-            }
-
-                .modal .modal-buttons .btn {
-                    margin-left: 8px;
-                }
-
-        /* Секция для отображения списка стажёров */
-        .intern-list {
-            margin-top: 8px;
-            padding-left: 16px;
-            font-size: 14px;
-            color: #333;
-            display: none;
-        }
-
-            .intern-list ul {
-                list-style: disc;
-            }
-
-        /* Стили уведомлений */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #ffc107;
-            color: #000;
-            padding: 12px 16px;
-            border-radius: 4px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            display: none;
-            z-index: 2000;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>Управление Internship и Projects</h1>
-
-    <!-- Таб-бар -->
-    <div class="tabs">
-        <div class="tab active" data-target="#internships-container">Internships</div>
-        <div class="tab" data-target="#projects-container">Projects</div>
+            <div class="modal-buttons">
+                <button type="button" id="modal-cancel" class="btn btn-secondary">Отмена</button>
+                <button type="submit" id="modal-save" class="btn btn-primary">Сохранить</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <!-- Контейнер для таблицы Internship -->
-    <div id="internships-container" class="table-container">
-        <button id="add-internship" class="btn btn-primary">Добавить Internship</button>
-        <table id="internships-table" class="display" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Название</th>
-                    <th>Кол-во стажёров</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+<!-- Уведомление -->
+<div id="notification" class="notification"></div>
 
-    <!-- Контейнер для таблицы Projects -->
-    <div id="projects-container" class="table-container hidden">
-        <button id="add-project" class="btn btn-primary">Добавить Project</button>
-        <table id="projects-table" class="display" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Название</th>
-                    <th>Кол-во стажёров</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" />         
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 
-    <!-- Модальное окно для формы создания/редактирования -->
-    <div id="modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <h2 id="modal-title">Форма</h2>
-            <form id="entity-form">
-                <input type="hidden" id="entity-id" />
-                <label for="entity-name">Название:</label>
-                <input type="text" id="entity-name" required />
+<script src="~/js/internship.js"> </script>
 
-                <label for="entity-interns">Стажёры:</label>
-                <select id="entity-interns" multiple size="5">
-                    <!-- Здесь динамически будут подгружены все interns -->
-                </select>
-
-                <div class="modal-buttons">
-                    <button type="button" id="modal-cancel" class="btn btn-secondary">Отмена</button>
-                    <button type="submit" id="modal-save" class="btn btn-primary">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Уведомление -->
-    <div id="notification" class="notification"></div>
-
-    <script>
-        $(document).ready(function () {
-          // Базовые URL для API
-          const API_BASE = '/api/v1';
-          const URL_INTERNS = `${API_BASE}/interns`;
-          const URL_INTERNSHIPS = `${API_BASE}/internships`;
-          const URL_PROJECTS = `${API_BASE}/projects`;
-
-          // Кэш для всех interns (используется в формах)
-          let allInterns = [];
-
-          // DataTables объекты
-          let internshipsTable, projectsTable;
-
-          // Текущая активная сущность ('internship' или 'project')
-          let currentEntityType = 'internship';
-
-          // Получаем список всех interns (для форм создания/редактирования)
-          function loadAllInterns() {
-            return fetch(URL_INTERNS)
-              .then(res => res.json())
-              .then(data => {
-                allInterns = data || [];
-              })
-              .catch(err => console.error('Ошибка загрузки interns:', err));
-          }
-
-          // Показ уведомления (всплывающее сообщение)
-          function showNotification(message, duration = 3000) {
-            const $notif = $('#notification');
-            $notif.text(message).fadeIn(200);
-            setTimeout(() => {
-              $notif.fadeOut(200);
-            }, duration);
-          }
-
-          // Инициализация DataTable для заданного селектора
-          function initDataTable(selector, entityType) {
-            return $(selector).DataTable({
-              stateSave: true, // сохраняем параметры (поиск, сортировка, пагинация) в localStorage
-              stateSaveCallback: function (settings, data) {
-                localStorage.setItem(
-                  entityType + '-tableState',
-                  JSON.stringify(data)
-                );
-              },
-              stateLoadCallback: function (settings) {
-                const state = localStorage.getItem(entityType + '-tableState');
-                return state ? JSON.parse(state) : null;
-              },
-              columns: [
-                { data: 'name' },
-                { data: 'internCount', orderable: true },
-                { data: 'actions', orderable: false, searchable: false }
-              ],
-              order: [[0, 'asc']],
-              language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.5/i18n/Русский.json'
-              }
-            });
-          }
-
-          // Подготовка и отрисовка строки таблицы
-          function prepareRowData(entity, entityType) {
-            const id = entity.id;
-            const name = entity.name || '';
-            const internsArr = entity.interns || [];
-            const internCount = internsArr.length;
-
-            // Кнопка просмотра списка interns
-            const viewBtn = `<button class="btn btn-view" data-type="${entityType}" data-id="${id}" data-action="view">Стажёры (${internCount})</button>`;
-
-            // Кнопка редактирования
-            const editBtn = `<button class="btn btn-edit" data-type="${entityType}" data-id="${id}" data-action="edit">Редактировать</button>`;
-
-            // Кнопка удаления
-            const deleteBtn = `<button class="btn btn-delete" data-type="${entityType}" data-id="${id}" data-action="delete">Удалить</button>`;
-
-            // Формируем HTML для выпадающего списка interns (скрытая по умолчанию)
-            let internListHtml = `<div class="intern-list" id="${entityType}-intern-list-${id}"><ul>`;
-            internsArr.forEach(i => {
-              const fullName = `${i.name || ''} ${i.surname || ''}`.trim();
-              internListHtml += `<li>${fullName || '(без имени)'}</li>`;
-            });
-            internListHtml += '</ul></div>';
-
-            return {
-              id,
-              name,
-              internCount,
-              actions: viewBtn + editBtn + deleteBtn + internListHtml
-            };
-          }
-
-          // Загрузка данных и заполнение таблицы entityType ('internship' или 'project')
-          function loadAndRenderTable(entityType) {
-            const URL = entityType === 'internship' ? URL_INTERNSHIPS : URL_PROJECTS;
-            const table = entityType === 'internship' ? internshipsTable : projectsTable;
-
-            fetch(URL)
-              .then(res => res.json())
-              .then(data => {
-                table.clear();
-                data.forEach(entity => {
-                  const row = prepareRowData(entity, entityType);
-                  table.row.add(row);
-                });
-                table.draw(false);
-              })
-              .catch(err => {
-                console.error(`Ошибка загрузки ${entityType}:`, err);
-                showNotification(`Не удалось загрузить ${entityType}`, 3000);
-              });
-          }
-
-          // Открывает модальное окно с формой для создания/редактирования
-          function openFormModal(entityType, mode, entityData = null) {
-            // mode: 'add' или 'edit'
-            $('#entity-form')[0].reset();
-            $('#entity-id').val('');
-            $('#entity-interns').empty();
-
-            // Заполняем селект всеми interns
-            allInterns.forEach(intern => {
-              const fullName = `${intern.name || ''} ${intern.surname || ''}`.trim();
-              $('#entity-interns').append(
-                `<option value="${intern.id}">${fullName || '(без имени)'}</option>`
-              );
-            });
-
-            if (mode === 'add') {
-              $('#modal-title').text(
-                entityType === 'internship'
-                  ? 'Добавить Internship'
-                  : 'Добавить Project'
-              );
-            } else if (mode === 'edit' && entityData) {
-              $('#modal-title').text(
-                entityType === 'internship'
-                  ? 'Редактировать Internship'
-                  : 'Редактировать Project'
-              );
-              $('#entity-id').val(entityData.id);
-              $('#entity-name').val(entityData.name || '');
-
-              // Отмечаем в селекте тех interns, которые уже привязаны
-              const boundInternIds = (entityData.interns || []).map(i => i.id);
-              $('#entity-interns option').each(function () {
-                if (boundInternIds.includes(parseInt($(this).val()))) {
-                  $(this).prop('selected', true);
-                }
-              });
-            }
-
-            // Сохраним в data текущий режим и тип
-            $('#entity-form').data('mode', mode);
-            $('#entity-form').data('type', entityType);
-
-            $('#modal-overlay')
-            .css('display', 'flex')  // указываем, что при показе должен быть flex
-            .hide()                  // скрываем, чтобы fadeIn начал с opacity:0
-            .fadeIn(200);
-              }
-
-          // Закрыть модальное окно
-          function closeFormModal() {
-            $('#modal-overlay').fadeOut(200);
-          }
-
-          // Обработчик отправки формы (создать/редактировать)
-          $('#entity-form').on('submit', function (e) {
-            e.preventDefault();
-            const mode = $(this).data('mode'); // 'add' или 'edit'
-            const entityType = $(this).data('type'); // 'internship' или 'project'
-            const id = $('#entity-id').val();
-            const name = $('#entity-name').val().trim();
-            const selectedInternIds = $('#entity-interns')
-              .val()
-              .map(idStr => parseInt(idStr));
-
-            if (!name) {
-              alert('Название не может быть пустым.');
-              return;
-            }
-
-            // URL и метод для создания/редактирования
-            const URL =
-              mode === 'add'
-                ? entityType === 'internship'
-                  ? URL_INTERNSHIPS
-                  : URL_PROJECTS
-                : entityType === 'internship'
-                ? `${URL_INTERNSHIPS}/${id}`
-                : `${URL_PROJECTS}/${id}`;
-            const method = mode === 'add' ? 'POST' : 'PUT';
-
-            // Сначала создаём/обновляем саму сущность (только name)
-            const payload = { name };
-            fetch(URL, {
-              method: method,
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            })
-              .then(res => {
-                if (!res.ok) {
-                  return res.json().then(errData => {
-                    throw new Error(
-                      `Ошибка ${mode === 'add' ? 'создания' : 'обновления'}: ${
-                        errData.message || res.statusText
-                      }`
-                    );
-                  });
-                }
-                return res.json();
-              })
-              .then(resultArray => {
-                // API возвращает полный массив новых сущностей — найдём нужную
-                const updatedEntity = Array.isArray(resultArray)
-                  ? resultArray.find(item => item.name === name)
-                  : resultArray;
-                if (!updatedEntity) {
-                  throw new Error('Не удалось получить созданную/обновлённую сущность');
-                }
-                const newEntityId = updatedEntity.id;
-
-                // Теперь обрабатываем ассоциации interns ↔ entity
-                // 1) Получим текущее состояние interns, привязанных к данному entity (в случае редактирования)
-                let prevInternIds = [];
-                if (mode === 'edit') {
-                  prevInternIds = (updatedEntity.interns || []).map(i => i.id);
-                }
-
-                // 2) Для всех ранее привязанных, кто сейчас не выбран — нужно отвязать
-                const internsToUnbind = prevInternIds.filter(
-                  pid => !selectedInternIds.includes(pid)
-                );
-                // 3) Для всех выбранных, кто ранее не был привязан — нужно привязать
-                const internsToBind = selectedInternIds.filter(
-                  sid => !prevInternIds.includes(sid)
-                );
-
-                const bindPromises = [];
-                // Отвязываем
-                internsToUnbind.forEach(internId => {
-                  // Нужно получить данные интерна, чтобы узнать его текущие projectId и internshipId
-                  const internUrl = `${URL_INTERNS}/${internId}`;
-                  bindPromises.push(
-                    fetch(internUrl)
-                      .then(r => r.json())
-                      .then(internData => {
-                        const updatedPayload = {
-                          ...internData,
-                          internshipId:
-                            entityType === 'internship' && prevInternIds.includes(internId)
-                              ? null
-                              : internData.internshipId,
-                          projectId:
-                            entityType === 'project' && prevInternIds.includes(internId)
-                              ? null
-                              : internData.projectId
-                        };
-                        // Если отвязываем от internship, то обнуляем internshipId
-                        // Если от project — обнуляем projectId
-                        return fetch(internUrl, {
-                          method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify(updatedPayload)
-                        });
-                      })
-                  );
-                });
-                // Привязываем
-                internsToBind.forEach(internId => {
-                  const internUrl = `${URL_INTERNS}/${internId}`;
-                  bindPromises.push(
-                    fetch(internUrl)
-                      .then(r => r.json())
-                      .then(internData => {
-                        const updatedPayload = {
-                          ...internData,
-                          internshipId:
-                            entityType === 'internship'
-                              ? newEntityId
-                              : internData.internshipId,
-                          projectId:
-                            entityType === 'project'
-                              ? newEntityId
-                              : internData.projectId
-                        };
-                        return fetch(internUrl, {
-                          method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify(updatedPayload)
-                        });
-                      })
-                  );
-                });
-
-                return Promise.all(bindPromises);
-              })
-              .then(() => {
-                showNotification(
-                  mode === 'add'
-                    ? 'Сущность успешно создана'
-                    : 'Сущность успешно обновлена'
-                );
-                closeFormModal();
-                // Перезагрузим таблицу
-                loadAndRenderTable(entityType);
-              })
-              .catch(err => {
-                console.error(err);
-                alert(err.message);
-              });
-          });
-
-          // Обработчик кнопки отмены в модальном окне
-          $('#modal-cancel').on('click', function () {
-            closeFormModal();
-          });
-
-          // Обработчик кликов по табам
-          $('.tab').on('click', function () {
-            $('.tab').removeClass('active');
-            $(this).addClass('active');
-            const target = $(this).data('target');
-            $('.table-container').addClass('hidden');
-            $(target).removeClass('hidden');
-
-            // Обновим текущий тип сущности
-            currentEntityType = target.includes('internships')
-              ? 'internship'
-              : 'project';
-          });
-
-          // Обработчик кнопок Добавить
-          $('#add-internship').on('click', function () {
-            openFormModal('internship', 'add');
-          });
-          $('#add-project').on('click', function () {
-            openFormModal('project', 'add');
-          });
-
-          // Делегированные обработчики для действий внутри таблиц (View, Edit, Delete)
-          $('body').on('click', 'button[data-action]', function () {
-            const action = $(this).data('action');
-            const entityType = $(this).data('type');
-            const id = $(this).data('id');
-
-            if (action === 'view') {
-              // Показываем/скрываем div с intern-list
-              const $list = $(`#${entityType}-intern-list-${id}`);
-              $list.toggle();
-            } else if (action === 'edit') {
-              // Получить данные сущности по ID и открыть форму редактирования
-              const URL =
-                entityType === 'internship'
-                  ? `${URL_INTERNSHIPS}/${id}`
-                  : `${URL_PROJECTS}/${id}`;
-              fetch(URL)
-                .then(res => res.json())
-                .then(data => {
-                  openFormModal(entityType, 'edit', data);
-                })
-                .catch(err => {
-                  console.error('Ошибка получения данных для редактирования:', err);
-                  showNotification('Не удалось загрузить данные для редактирования', 3000);
-                });
-            } else if (action === 'delete') {
-              // Перед удалением проверим, есть ли связанные interns
-              const URL =
-                entityType === 'internship'
-                  ? `${URL_INTERNSHIPS}/${id}`
-                  : `${URL_PROJECTS}/${id}`;
-              fetch(URL)
-                .then(res => res.json())
-                .then(data => {
-                  const internsArr = data.interns || [];
-                  if (internsArr.length > 0) {
-                    showNotification(
-                      `Нельзя удалить, т.к. есть ${internsArr.length} связанных стажёров`
-                    );
-                    return;
-                  }
-                  if (
-                    confirm(
-                      `Вы действительно хотите удалить ${
-                        entityType === 'internship' ? 'Internship' : 'Project'
-                      } "${data.name}"?`
-                    )
-                  ) {
-                    // Выполняем DELETE
-                    fetch(URL, { method: 'DELETE' })
-                      .then(res => {
-                        if (!res.ok) {
-                          throw new Error('Ошибка при удалении');
-                        }
-                        showNotification('Удалено успешно');
-                        loadAndRenderTable(entityType);
-                      })
-                      .catch(err => {
-                        console.error('Ошибка удаления:', err);
-                        showNotification('Ошибка при удалении', 3000);
-                      });
-                  }
-                })
-                .catch(err => {
-                  console.error('Ошибка проверки перед удалением:', err);
-                });
-            }
-          });
-
-          // Инициализация: сначала загрузим всех interns, затем таблицы
-          Promise.all([loadAllInterns()]).then(() => {
-            internshipsTable = initDataTable('#internships-table', 'internships');
-            projectsTable = initDataTable('#projects-table', 'projects');
-
-            // Загрузим и отрисуем данные
-            loadAndRenderTable('internship');
-            loadAndRenderTable('project');
-          });
-        });
-    </script>
-</body>
-</html>
