@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TestTask66Bit.Abstractions;
 using TestTask66Bit.Data;
 using TestTask66Bit.Data.Entites;
 using TestTask66Bit.Exceptions;
+using TestTask66Bit.Hubs;
 using TestTask66Bit.ViewModels.Request;
 using TestTask66Bit.ViewModels.Response;
 
@@ -12,13 +14,16 @@ namespace TestTask66Bit.Services
 {
     public class InternsService : IInternsService
     {
+        private readonly IHubContext<InternsHub> _internsHub;
         private readonly IMapper _mapper;
         private readonly ApplicationContext _dbContext;
 
         public InternsService(
             IMapper mapper,
+            IHubContext<InternsHub> internsHub,
             ApplicationContext dbContext)
         {
+            _internsHub = internsHub;
             _mapper = mapper;
             _dbContext = dbContext;
         }
@@ -32,7 +37,10 @@ namespace TestTask66Bit.Services
             await _dbContext.Interns.AddAsync(intern);
             await _dbContext.SaveChangesAsync();
 
-            return _mapper.Map<InternDto>(intern);
+            var internDto = _mapper.Map<InternDto>(intern);
+            await _internsHub.Clients.All.SendAsync("OnInternCreate", internDto);
+
+            return internDto;
         }
 
         public async Task<InternDto> Get(int id)
@@ -76,7 +84,10 @@ namespace TestTask66Bit.Services
             intern.InternshipId = model.InternshipId;
             await _dbContext.SaveChangesAsync();
 
-            return _mapper.Map<InternDto>(intern);
+            var internDto = _mapper.Map<InternDto>(intern);
+            await _internsHub.Clients.All.SendAsync("OnInternUpdate", internDto);
+
+            return internDto;
         }
 
         public async Task Delete(int internId)
@@ -87,6 +98,8 @@ namespace TestTask66Bit.Services
 
             _dbContext.Interns.Remove(intern);
             await _dbContext.SaveChangesAsync();
+
+            await _internsHub.Clients.All.SendAsync("OnInternDelete", internId);
         }
 
         private async Task CreateInternValidations(CreateInternDto model)

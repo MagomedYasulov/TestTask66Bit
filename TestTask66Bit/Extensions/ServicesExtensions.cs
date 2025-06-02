@@ -35,6 +35,18 @@ namespace TestTask66Bit.Extensions
             return builder;
         }
 
+        public static WebApplicationBuilder AddSignalR(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddSignalR().AddNewtonsoftJsonProtocol(options =>
+            {
+                options.PayloadSerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                options.PayloadSerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                options.PayloadSerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
+
+            return builder;
+        }
+
         public static WebApplicationBuilder AddSwagger(this WebApplicationBuilder builder)
         {
             builder.Services.AddEndpointsApiExplorer();

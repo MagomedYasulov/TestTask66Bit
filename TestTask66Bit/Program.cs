@@ -1,5 +1,6 @@
 
 using TestTask66Bit.Extensions;
+using TestTask66Bit.Hubs;
 
 namespace TestTask66Bit
 {
@@ -13,6 +14,7 @@ namespace TestTask66Bit
 
             builder.AddData();
             builder.AddControllers();
+            builder.AddSignalR();
             builder.AddSwagger();
             builder.AddFluentValidation();
             builder.AddAutoMapper();
@@ -37,6 +39,7 @@ namespace TestTask66Bit
             app.UseExceptionHandler();
             app.UseAuthorization();
 
+            app.MapHub<InternsHub>("/interns");
             app.MapControllers();
 
             app.Run();

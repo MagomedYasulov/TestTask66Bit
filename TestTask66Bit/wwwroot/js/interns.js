@@ -7,6 +7,11 @@ let internships = [];
 let projects = [];
 let internsTable;
 
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/interns") // Укажите URL вашего SignalR хаба
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
 // Загрузить направления и проекты
 function loadInternshipsAndProjects() {
     return Promise.all([
@@ -214,6 +219,26 @@ $('#clear-filters').on('click', function () {
     loadAndRenderInterns();
 });
 
+// Start the connection
+connection.start().then(() => {
+    console.log("SignalR connection established.");
+}).catch(err => {
+    console.error("SignalR connection error: ", err);
+});
+
+// Handle incoming messages
+connection.on("OnInternCreate", (intern) => {
+    loadAndRenderInterns();
+});
+
+connection.on("OnInternUpdate", (message) => {
+    loadAndRenderInterns()
+});
+
+connection.on("OnInternDelete", (messageId) => {
+    loadAndRenderInterns()
+});
+
 // Инициализация страницы
 loadInternshipsAndProjects().then(() => {
     populateInternshipSelects();
@@ -221,3 +246,4 @@ loadInternshipsAndProjects().then(() => {
     initTable();
     loadAndRenderInterns();
 });
+
