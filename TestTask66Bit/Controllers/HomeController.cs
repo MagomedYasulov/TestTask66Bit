@@ -11,6 +11,12 @@ namespace TestTask66Bit.Controllers
             return View();
         }
 
+        [HttpGet("interns/browse")]
+        public IActionResult Interns()
+        {
+            return View();
+        }
+
         [HttpGet("interns/create")]
         public IActionResult CreateIntern()
         {

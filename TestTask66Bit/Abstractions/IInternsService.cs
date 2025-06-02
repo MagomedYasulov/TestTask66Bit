@@ -6,7 +6,7 @@ namespace TestTask66Bit.Abstractions
     public interface IInternsService
     {
         public Task<InternDto> Get(int id);
-        public Task<InternDto[]> Get();
+        public Task<InternDto[]> Get(InternsFilter filter);
         public Task<InternDto> Create(CreateInternDto model);
         public Task<InternDto> Update(int id, UpdateInternDto model);
 

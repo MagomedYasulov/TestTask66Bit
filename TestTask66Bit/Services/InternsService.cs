@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TestTask66Bit.Abstractions;
 using TestTask66Bit.Data;
 using TestTask66Bit.Data.Entites;
@@ -43,9 +44,17 @@ namespace TestTask66Bit.Services
             return _mapper.Map<InternDto>(intern);
         }
 
-        public async Task<InternDto[]> Get()
+        public async Task<InternDto[]> Get(InternsFilter filter)
         {
-            var interns = await _dbContext.Interns.AsNoTracking().Include(p => p.Project).Include(i => i.Internship).OrderBy(i => i.CreatedAt).ToArrayAsync();
+            var isProjectNull = filter.ProjectId == null;
+            var isInternshipNull = filter.InternshipId == null;
+
+            Expression<Func<Intern, bool>> exp = i => ((isProjectNull || i.ProjectId == filter.ProjectId) &&
+                                                       (isInternshipNull || i.InternshipId == filter.InternshipId));
+
+            var interns = await _dbContext.Interns.AsNoTracking().Include(p => p.Project).Include(i => i.Internship)
+                                                  .Where(exp).OrderBy(i => i.CreatedAt).ToArrayAsync();
+
             return _mapper.Map<InternDto[]>(interns);
         }
 

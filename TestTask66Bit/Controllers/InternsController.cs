@@ -25,9 +25,9 @@ namespace TestTask66Bit.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<InternDto[]>> Get()
+        public async Task<ActionResult<InternDto[]>> Get(InternsFilter filter)
         {
-            var internDtos = await _internsService.Get();
+            var internDtos = await _internsService.Get(filter);
             return Ok(internDtos);
         }
 
