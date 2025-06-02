@@ -3,9 +3,18 @@
 <head>
     <meta charset="UTF-8" />
     <title>Test Task</title>
+
+    @RenderSection("Scripts", false)
+    @RenderSection("Styles", false)
 </head>
 
 <body>
+    <!-- Навигационная панель -->
+    <nav>
+        <a href="~/home/internships">Стажировки/Проекты</a>
+        <a href="~/home/interns/browse">Стажеры</a>
+        <a href="~/home/interns/create">Создать Стажера</a>
+    </nav>
     @RenderBody()
 </body>
 </html>

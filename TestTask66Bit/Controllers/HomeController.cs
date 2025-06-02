@@ -5,8 +5,14 @@ namespace TestTask66Bit.Controllers
     [Route("home")]
     public class HomeController : Controller
     {
-        [HttpGet("index")]
-        public IActionResult Index()
+        [HttpGet("internships")]
+        public IActionResult Internships()
+        {
+            return View();
+        }
+
+        [HttpGet("interns/create")]
+        public IActionResult CreateIntern()
         {
             return View();
         }

@@ -11,6 +11,7 @@ namespace TestTask66Bit.Extensions
             return ruleBuilder.Matches(regex);
         }
 
+        //[GeneratedRegex(@"^(?:\+?7|8)?(?:[\s\-(_]+)?(\d{3})(?:[\s\-_)]+)?(\d{3})(?:[\s\-_]+)?(\d{2})(?:[\s\-_]+)?(\d{2})$")]
         [GeneratedRegex(@"^(\+7)((\d{10})|(\s\(\d{3}\)\s\d{3}\s\d{2}\s\d{2}))$")]
         private static partial Regex PhoneRegex();
     }

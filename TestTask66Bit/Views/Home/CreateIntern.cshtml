@@ -1,0 +1,102 @@
+﻿@{
+    //Layout = null;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/createIntern.css">
+}
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+}
+   
+<!-- Контейнер страницы -->
+<div class="container">
+<h2>Добавить нового стажёра</h2>
+<form id="intern-form">
+    <!-- Имя -->
+    <label for="first-name">Имя *</label>
+    <input type="text" id="first-name" name="firstName" required />
+
+    <!-- Фамилия -->
+    <label for="last-name">Фамилия *</label>
+    <input type="text" id="last-name" name="lastName" required />
+
+    <!-- Пол -->
+    <label for="gender">Пол *</label>
+    <select id="gender" name="gender" required>
+        <option value="">Выберите пол</option>
+        <option value="Male">Мужской</option>
+        <option value="Female">Женский</option>
+    </select>
+
+    <!-- Email -->
+    <label for="email">Email *</label>
+    <input type="email" id="email" name="email" required />
+
+    <!-- Номер телефона -->
+    <label for="phone">Номер телефона (необязательно)</label>
+    <input type="tel" id="phone" name="phone" placeholder="+7XXXXXXXXXX" />
+
+    <!-- Дата рождения -->
+    <label for="birthdate">Дата рождения *</label>
+    <input type="date" id="birthdate" name="birthdate" required />
+
+    <!-- Направление стажировки -->
+    <label for="internship-direction">Направление стажировки *</label>
+    <div class="flex-row">
+        <select id="internship-direction" name="internshipId" required>
+            <option value="">Выберите направление</option>
+        </select>
+        <button type="button" class="btn btn-secondary" id="new-direction-btn">Новое</button>
+    </div>
+
+    <!-- Текущий проект -->
+    <label for="current-project">Текущий проект *</label>
+    <div class="flex-row">
+        <select id="current-project" name="projectId" required>
+            <option value="">Выберите проект</option>
+        </select>
+        <button type="button" class="btn btn-secondary" id="new-project-btn">Новое</button>
+    </div>
+
+    <!-- Блок для ошибок от сервера -->
+    <div class="error-detail" id="error-detail"></div>
+
+    <!-- Кнопка Отправить -->
+    <button type="submit" class="btn btn-primary" id="submit-btn">Сохранить</button>
+</form>
+</div>
+
+<!-- Модальное окно для создания нового направления -->
+<div id="modal-internship-overlay" class="modal-overlay">
+<div class="modal">
+    <h3>Добавить направление стажировки</h3>
+        <label for="new-internship-name">Название *</label>
+    <input type="text" id="new-internship-name" />
+    <div class="error-detail" id="error-new-internship"></div>
+    <div class="modal-buttons">
+        <button type="button" class="btn btn-secondary" id="cancel-new-direction">Отмена</button>
+        <button type="button" class="btn btn-primary" id="save-new-direction">Создать</button>
+    </div>
+</div>
+</div>
+
+<!-- Модальное окно для создания нового проекта -->
+<div id="modal-project-overlay" class="modal-overlay">
+<div class="modal">
+    <h3>Добавить новый проект</h3>
+    <label for="new-project-name">Название *</label>
+    <input type="text" id="new-project-name" />
+    <div class="error-detail" id="error-new-project"></div>
+    <div class="modal-buttons">
+        <button type="button" class="btn btn-secondary" id="cancel-new-project">Отмена</button>
+        <button type="button" class="btn btn-primary" id="save-new-project">Создать</button>
+    </div>
+</div>
+</div>
+
+<!-- Уведомление -->
+<div id="notification" class="notification"></div>
+
+<script src="~/js/createIntern.js"> </script>

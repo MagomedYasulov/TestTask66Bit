@@ -1,0 +1,178 @@
+﻿/* Базовый сброс */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    padding-bottom: 40px;
+}
+/* Навигационная панель */
+nav {
+    background-color: #007bff;
+    padding: 10px 20px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 20px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+/* Контейнер страницы */
+.container {
+    max-width: 600px;
+    margin: 30px auto;
+    background-color: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+/* Стили формы */
+form label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="tel"],
+form input[type="date"],
+form select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+form .flex-row {
+    display: flex;
+    align-items: center;
+}
+
+form .flex-row select,
+form .flex-row input {
+    flex: 1;
+}
+
+form .flex-row button {
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+/* Общий блок для показа server.detail */
+.error-detail {
+    margin-top: 12px;
+    color: #dc3545;
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+/* Стили кнопок */
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin-top: 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.btn:disabled {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+}
+/* Модальное окно для создания Direction/Project */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 360px;
+    max-width: 90%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal h3 {
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.modal label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.modal input[type="text"] {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.modal .modal-buttons {
+    text-align: right;
+}
+
+.modal .modal-buttons .btn {
+    margin-left: 8px;
+}
+/* Блоки для ошибок в модалках */
+.modal .error-detail {
+    margin-top: 4px;
+    color: #dc3545;
+    font-size: 13px;
+    white-space: pre-wrap;
+}
+
+/* Уведомление */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #ffc107;
+    color: #000;
+    padding: 10px 14px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+    z-index: 2000;
+}
